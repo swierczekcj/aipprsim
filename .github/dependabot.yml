@@ -8,7 +8,7 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
-    reviewers: [1]
+    reviewers: ["swierczekcj"]
     labels:
       - "dependencies"
   - package-ecosystem: "github-actions"
@@ -18,6 +18,6 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "ci"
-    reviewers: [1]
+    reviewers: [""]
     labels:
       - "ci"
