@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Player, DraftState, Team, DraftPick } from './types';
+import { calculateDraftScore } from './draftStrategies';
 
 // Example mock player data (expand as needed)
 const MOCK_PLAYERS: Player[] = [
@@ -91,14 +92,34 @@ export const useDraftStore = create<{
     });
   },
   nextAIPick: () => {
-    // AI picks best available player by projectedPPR
     const { state, draftPlayer } = useDraftStore.getState();
     if (state.isDraftComplete) return;
     const teamIndex = state.draftOrder[state.currentPick];
     if (teamIndex === 0) return; // Not AI's turn
-    // Pick top projectedPPR
-    const best = state.availablePlayers.slice().sort((a, b) => b.projectedPPR - a.projectedPPR)[0];
-    if (best) draftPlayer(best.id);
+
+    // Get current team's picks
+    const currentTeam = state.teams.find(t => t.name === `AI Team ${teamIndex}`);
+    if (!currentTeam) return;
+
+    // Calculate scores for all available players
+    const scoredPlayers = state.availablePlayers.map(player => ({
+      player,
+      score: calculateDraftScore(
+        player,
+        currentTeam.picks,
+        state.currentRound,
+        state.availablePlayers
+      )
+    }));
+
+    // Sort by score and pick the best
+    const bestPlayer = scoredPlayers
+      .sort((a, b) => b.score - a.score)
+      .map(p => p.player)[0];
+
+    if (bestPlayer) {
+      draftPlayer(bestPlayer.id);
+    }
   },
   resetDraft: () => {
     useDraftStore.setState({
